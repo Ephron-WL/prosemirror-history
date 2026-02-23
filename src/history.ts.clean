@@ -1,6 +1,6 @@
-import { Command, EditorState, Plugin, PluginKey, SelectionBookmark, Transaction } from "prosemirror-state";
-import { Mapping, Step, StepMap, Transform } from "prosemirror-transform";
-import RopeSequence from "rope-sequence";
+import { Command, EditorState, Plugin, PluginKey, SelectionBookmark, Transaction } from "prosemirror-state"
+import { Mapping, Step, StepMap, Transform } from "prosemirror-transform"
+import RopeSequence from "rope-sequence"
 
 // ProseMirror's history isn't simply a way to roll back to a previous
 // state, because ProseMirror supports applying changes without adding
@@ -21,9 +21,8 @@ import RopeSequence from "rope-sequence";
 // Used to schedule history compression
 const max_empty_items = 500
 
-export class Branch {
-	constructor(public readonly items: RopeSequence<Item>, public readonly eventCount: number, private isRevive: boolean = false) {
-	}
+class Branch {
+	constructor(readonly items: RopeSequence<Item>, readonly eventCount: number) { }
 
 	// Pop the latest event off the branch's history and apply it
 	// to a document transform.
@@ -53,7 +52,7 @@ export class Branch {
 				}
 				mapFrom!--
 				addBefore.push(item)
-				return;
+				return
 			}
 
 			if (remap) {
@@ -73,12 +72,12 @@ export class Branch {
 			if (item.selection) {
 				selection = remap ? item.selection.map(remap.slice(mapFrom)) : item.selection
 				remaining = new Branch(this.items.slice(0, end).append(addBefore.reverse().concat(addAfter)), this.eventCount - 1)
-				return false;
+				return false
 			}
 			return true;
 		}, this.items.length, 0)
 
-		return { remaining: remaining!, transform, selection: selection! };
+		return { remaining: remaining!, transform, selection: selection! }
 	}
 
 	// Create a new branch with the given transform added.
@@ -121,10 +120,7 @@ export class Branch {
 	}
 
 	addMaps(array: readonly StepMap[]) {
-		if (this.eventCount == 0 || this.isRevive) {
-			this.isRevive = false;
-			return this;
-		}
+		if (this.eventCount == 0) return this
 		return new Branch(this.items.append(array.map(map => new Item(map))), this.eventCount)
 	}
 
@@ -223,7 +219,7 @@ function cutOffEvents(items: RopeSequence<Item>, n: number) {
 	return items.slice(cutPoint!)
 }
 
-export class Item {
+class Item {
 	constructor(
 		// The (forward) step map for this item.
 		readonly map: StepMap,
@@ -250,7 +246,7 @@ export class Item {
 // The value of the state field that tracks undo/redo history for that
 // state. Will be stored in the plugin state when the history plugin
 // is active.
-export class HistoryState {
+class HistoryState {
 	constructor(
 		readonly done: Branch,
 		readonly undone: Branch,
@@ -395,7 +391,7 @@ interface HistoryOptions {
 /// You can set an `"addToHistory"` [metadata
 /// property](#state.Transaction.setMeta) of `false` on a transaction
 /// to prevent it from being rolled back by undo.
-export function history(config: HistoryOptions = {}, historyState: HistoryState | null): Plugin {
+export function history(config: HistoryOptions = {}): Plugin {
 	config = {
 		depth: config.depth || 100,
 		newGroupDelay: config.newGroupDelay || 500
@@ -406,7 +402,7 @@ export function history(config: HistoryOptions = {}, historyState: HistoryState 
 
 		state: {
 			init() {
-				return historyState ?? new HistoryState(Branch.empty, Branch.empty, null, 0, -1)
+				return new HistoryState(Branch.empty, Branch.empty, null, 0, -1)
 			},
 			apply(tr, hist, state) {
 				return applyTransaction(hist, state, tr, config as Required<HistoryOptions>)

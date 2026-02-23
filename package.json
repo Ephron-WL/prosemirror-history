@@ -31,7 +31,8 @@
   },
   "devDependencies": {
     "@prosemirror/buildhelper": "^0.1.5",
-    "prosemirror-test-builder": "^1.0.0"
+    "ist": "^1.1.7",
+    "prosemirror-test-builder": "^1.1.1"
   },
   "scripts": {
     "test": "pm-runtests",
